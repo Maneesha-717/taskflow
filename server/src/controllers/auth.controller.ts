@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from "../config/prisma";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { AuthRequest } from "../middleware/auth.middleware";
 
 export const register = async (
   req: Request,
@@ -129,6 +130,24 @@ export const login = async (
   } catch (error) {
     console.error(error);
 
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const profile = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    return res.status(200).json({
+      success: true,
+      message: "Profile fetched",
+      user: req.user,
+    });
+  } catch (error) {
     return res.status(500).json({
       success: false,
       message: "Server Error",
