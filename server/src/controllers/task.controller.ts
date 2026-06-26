@@ -67,3 +67,138 @@ export const getTasks = async (
     });
   }
 };
+
+
+export const getTaskById = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const id = String(req.params.id);
+
+    const task = await prisma.task.findFirst({
+      where: {
+        id,
+        userId: req.user!.userId,
+      },
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: task,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const updateTask = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    // Get task ID from URL
+    const id = String(req.params.id);
+
+    // Get updated data from request body
+    const { title, description } = req.body;
+
+    // Get logged-in user's ID
+    const userId = req.user!.userId;
+
+    // Check if the task exists and belongs to the logged-in user
+    const existingTask = await prisma.task.findFirst({
+      where: {
+        id,
+        userId,
+      },
+    });
+
+    if (!existingTask) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+
+    // Update the task
+    const updatedTask = await prisma.task.update({
+      where: {
+        id,
+      },
+      data: {
+        title,
+        description,
+      },
+    });
+
+    // Send response
+    return res.status(200).json({
+      success: true,
+      message: "Task updated successfully",
+      data: updatedTask,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const deleteTask = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const id = String(req.params.id);
+    const userId = req.user!.userId;
+
+    const existingTask = await prisma.task.findFirst({
+      where: {
+        id,
+        userId,
+      },
+    });
+
+    if (!existingTask) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
+
+    const deletedTask = await prisma.task.delete({
+      where: {
+        id,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Task deleted successfully",
+      data: deletedTask,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
